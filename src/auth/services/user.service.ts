@@ -3,7 +3,8 @@ import { UserRepository } from '../repositories';
 import { SignupReqDto } from '../dto';
 import { User } from '../entities';
 import * as argon2 from 'argon2';
-import { BusinessException } from 'src/exception';
+// import { BusinessException } from 'src/exception';
+import { BusinessException } from '../../exception';
 
 @Injectable()
 export class UserService {
@@ -18,10 +19,14 @@ export class UserService {
   async signup(singupReqDto: SignupReqDto): Promise<User> {
     const user = await this.userRepository.findOneByEmail(singupReqDto.email);
     if (user) {
+      // this.logger.error(
+      //   HttpStatus.BAD_REQUEST,
+      //   `${singupReqDto.email} already exists in log`,
+      // );
       throw new BusinessException(
         'user',
         `${singupReqDto.email} already exist`,
-        // `${singupReqDto.email} already exist, this message for users`,
+        `${singupReqDto.email} already exist, this message for users`,
         HttpStatus.BAD_REQUEST,
       );
     }

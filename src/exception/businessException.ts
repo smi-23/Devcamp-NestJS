@@ -9,7 +9,7 @@ export class BusinessException extends Error {
   constructor(
     public readonly domain: ErrorDomain,
     public readonly message: string, // 로깅 메시지
-    // public readonly apiMessage: string, // 사용자 메시지
+    public readonly apiMessage: string, // 사용자 메시지
     public readonly status: HttpStatus,
   ) {
     super(message);
