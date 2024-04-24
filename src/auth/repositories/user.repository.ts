@@ -13,7 +13,11 @@ export class UserRepository extends Repository<User> { // 데이터베이스와 
     super(repo.target, repo.manager, repo.queryRunner);
   }
 
-  async signup(dto: SignupReqDto, hashedPassword: string): Promise<User>{
+  async findOneByEmail(email: string): Promise<User> {
+    return this.repo.findOneBy({ email });
+  }
+
+  async signup(dto: SignupReqDto, hashedPassword: string): Promise<User> {
     const user = new User();
     user.name = dto.name;
     user.email = dto.email;
