@@ -15,6 +15,10 @@ export class UserService {
   }
 
   async signup(singupReqDto: SignupReqDto): Promise<User> {
+    // const user = await this.userRepository.findOneByEmail(singupReqDto.email);
+    // if (user){
+    //   throw new BusinessException
+    // }
     const hashedPassword = await argon2.hash(singupReqDto.password);
     return this.userRepository.signup(singupReqDto, hashedPassword);
   }
