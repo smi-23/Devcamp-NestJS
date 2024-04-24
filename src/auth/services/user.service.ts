@@ -25,7 +25,7 @@ export class UserService {
       // );
       throw new BusinessException(
         'user',
-        `${singupReqDto.email} already exist`,
+        `Email ${singupReqDto.email} already exist`,
         `${singupReqDto.email} already exist, this message for users`,
         HttpStatus.BAD_REQUEST,
       );
