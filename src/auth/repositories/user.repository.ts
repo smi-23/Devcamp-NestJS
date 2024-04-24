@@ -5,7 +5,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { SignupReqDto } from '../dto';
 
 @Injectable()
-export class UserRepository extends Repository<User> { // 데이터베이스와 상호작용
+export class UserRepository extends Repository<User> {
+  // 데이터베이스와 상호작용
   constructor(
     @InjectRepository(User)
     private readonly repo: Repository<User>,
