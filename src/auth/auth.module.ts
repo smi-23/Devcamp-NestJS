@@ -3,16 +3,45 @@ import { AuthService, UserService } from './services';
 import { AuthController } from './controllers';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AccessToken, RefreshToken, User } from './entities';
-import { UserRepository } from './repositories';
+import {
+  AccessTokenRepository,
+  RefreshTokenRepository,
+  UserRepository,
+} from './repositories';
 import { HttpModule } from '@nestjs/axios';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
     HttpModule,
+    ConfigModule,
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        secret: configService.get<string>('JWT_SECRET'),
+        signOptions: {
+          expiresIn: configService.get<string>('ACCESS_TOKEN_EXPIRY'),
+        },
+      }),
+    }),
     TypeOrmModule.forFeature([User, AccessToken, RefreshToken]),
   ],
   controllers: [AuthController],
-  providers: [UserService, AuthService, UserRepository],
-  exports: [UserService, AuthService, UserRepository],
+  providers: [
+    UserService,
+    AuthService,
+    UserRepository,
+    RefreshTokenRepository,
+    AccessTokenRepository,
+  ],
+  exports: [
+    UserService,
+    AuthService,
+    UserRepository,
+    RefreshTokenRepository,
+    AccessTokenRepository,
+  ],
 })
 export class AuthModule {}

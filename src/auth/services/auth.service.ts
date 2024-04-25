@@ -78,9 +78,9 @@ export class AuthService {
   }
 
   async createAccessToken(user: User, payload: TokenPayload): Promise<string> {
-    const expiresIN = this.configService.get<string>('ACCESS_TOKEN_EXPIRY');
+    const expiresIn = this.configService.get<string>('ACCESS_TOKEN_EXPIRY');
     const token = this.jwtService.sign(payload, { expiresIn });
-    const expiresAT = this.calculateExpiry(expiresIN);
+    const expiresAT = this.calculateExpiry(expiresIn);
 
     await this.accessTokenRepository.saveAccessToken(
       payload.jti,
@@ -93,9 +93,9 @@ export class AuthService {
   }
 
   async createRefreshToken(user: User, payload: TokenPayload): Promise<string> {
-    const expiresIN = this.configService.get<string>('REFRESH_TOKEN_EXPIRY');
+    const expiresIn = this.configService.get<string>('REFRESH_TOKEN_EXPIRY');
     const token = this.jwtService.sign(payload, { expiresIn });
-    const expiresAT = this.calculateExpiry(expiresIN);
+    const expiresAT = this.calculateExpiry(expiresIn);
 
     await this.refreshTokenRepository.saveRefreshToken(
       payload.jti,
