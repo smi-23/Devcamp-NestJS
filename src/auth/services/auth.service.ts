@@ -4,6 +4,9 @@ import { User } from '../entities';
 import * as argon2 from 'argon2';
 import { BusinessException } from 'src/exception';
 import { LoginResDto } from '../dto/login-res.dto';
+import { TokenPayload } from '../dto';
+import { v4 as uuidv4 } from 'uuid';
+
 
 @Injectable()
 export class AuthService {
@@ -47,5 +50,13 @@ export class AuthService {
       'Invalid-credentials',
       HttpStatus.UNAUTHORIZED,
     );
+  }
+
+  createTokenPayload(userId: string): TokenPayload {
+    return {
+      sub: userId,
+      iat: Math.floor(Date.now() / 1000),
+      jti: uuidv4(),
+    };
   }
 }
