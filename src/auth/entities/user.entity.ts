@@ -1,5 +1,7 @@
 import { BaseEntity } from '../../common/entities';
-import { Column, Entity } from 'typeorm';
+import { Column, Entity, OneToMany, Relation } from 'typeorm';
+import { AccessToken } from './access-token.entity';
+import { RefreshToken } from './refresh-token.entity';
 
 export type UserRole = 'admin' | 'user';
 
@@ -25,4 +27,10 @@ export class User extends BaseEntity {
 
   // @Column({ default: false })
   // isPersonalInfoVerified: boolean;
+
+  @OneToMany(() => AccessToken, (token) => token.user) // 이 경우는 양방향을 의미함
+  accessToken: Relation<AccessToken[]>;
+
+  @OneToMany(() => RefreshToken, (token) => token.user)
+  refreshToken: Relation<RefreshToken[]>;
 }
