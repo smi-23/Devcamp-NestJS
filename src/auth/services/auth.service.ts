@@ -13,6 +13,7 @@ import { AccessLog, TokenPayload } from '../dto';
 import { v4 as uuidv4 } from 'uuid';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { TokenBlacklistService } from './token-blacklist.service';
 
 @Injectable()
 export class AuthService {
@@ -25,6 +26,7 @@ export class AuthService {
     private readonly refreshTokenRepository: RefreshTokenRepository,
     private readonly accessLogRepository: AccessLogRepository,
     private readonly configService: ConfigService,
+    private readonly tokenBlacklistService: TokenBlacklistService,
   ) {}
 
   async login(
@@ -57,6 +59,31 @@ export class AuthService {
         refreshToken,
       },
     };
+  }
+
+  async logout(accessToken: string, refreshToken: string): Promise<void> {
+    const [jtiAccess, jtiRefresh] = await Promise.all([
+      this.jwtService.verifyAsync(accessToken, {
+        secret: this.configService.get<string>('JWT_SECRET'),
+      }),
+      this.jwtService.verifyAsync(refreshToken, {
+        secret: this.configService.get<string>('JWT_SECRET'),
+      }),
+    ]);
+    await Promise.all([
+      this.addToBlacklist(
+        accessToken,
+        jtiAccess,
+        'access',
+        'ACCESS_TOKEN_EXPIRY',
+      ),
+      this.addToBlacklist(
+        refreshToken,
+        jtiRefresh,
+        'refresh',
+        'REFRESH_TOKEN_EXPIRY',
+      ),
+    ]);
   }
 
   private async validateUser(
@@ -177,5 +204,22 @@ export class AuthService {
     }
 
     return new Date(Date.now() + expiresInMilliseconds);
+  }
+
+  private async addToBlacklist(
+    token: string,
+    jti: string,
+    type: 'access' | 'refresh',
+    expiryConfigKey: string,
+  ): Promise<void> {
+    const expiryTime = this.calculateExpiry(
+      this.configService.get<string>(expiryConfigKey),
+    );
+    await this.tokenBlacklistService.addToBlacklist(
+      token,
+      jti,
+      type,
+      expiryTime,
+    );
   }
 }

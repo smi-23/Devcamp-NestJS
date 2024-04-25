@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { AuthService, UserService } from './services';
+import { AuthService, TokenBlacklistService, UserService } from './services';
 import { AuthController } from './controllers';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AccessLog, AccessToken, RefreshToken, User } from './entities';
@@ -8,10 +8,12 @@ import {
   RefreshTokenRepository,
   UserRepository,
   AccessLogRepository,
+  TokenBlacklistRepository,
 } from './repositories';
 import { HttpModule } from '@nestjs/axios';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
+import { TokenBlacklist } from './entities/token-blacklist.entity';
 
 @Module({
   imports: [
@@ -27,24 +29,36 @@ import { JwtModule } from '@nestjs/jwt';
         },
       }),
     }),
-    TypeOrmModule.forFeature([User, AccessToken, RefreshToken, AccessLog]),
+    TypeOrmModule.forFeature([
+      User,
+      AccessToken,
+      RefreshToken,
+      AccessLog,
+      TokenBlacklist,
+    ]),
   ],
   controllers: [AuthController],
   providers: [
     UserService,
     AuthService,
+    TokenBlacklistService,
+
     UserRepository,
     RefreshTokenRepository,
     AccessTokenRepository,
     AccessLogRepository,
+    TokenBlacklistRepository,
   ],
   exports: [
     UserService,
     AuthService,
+    TokenBlacklistService,
+
     UserRepository,
     RefreshTokenRepository,
     AccessTokenRepository,
     AccessLogRepository,
+    TokenBlacklistRepository,
   ],
 })
 export class AuthModule {}
