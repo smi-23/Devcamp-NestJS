@@ -4,3 +4,4 @@ export * from './login-req.dto';
 export * from './login-req.dto';
 export * from './token-payload.dto';
 export * from './access-log.dto';
+export * from './refresh-token-req.dto';

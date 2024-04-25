@@ -119,6 +119,41 @@ export class AuthService {
     return token;
   }
 
+  async refreshAccessToken(refreshToken: string): Promise<string> {
+    try {
+      const abc = await this.jwtService.verifyAsync(refreshToken, {
+        secret: this.configService.get<string>('JWT_SECRET'),
+      });
+      this.logger.log(`내가 알고 싶은 값: ${JSON.stringify(abc)}`);
+      const { exp, ...payload } = abc;
+      // const { exp, ...payload } = await this.jwtService.verifyAsync(
+      //   refreshToken,
+      //   {
+      //     secret: this.configService.get<string>('JWT_SECRET'),
+      //   },
+      // )
+
+      const user = await this.userRepository.findOneBy({ id: payload.sub });
+      if (!user) {
+        throw new BusinessException(
+          'auth',
+          'user-not-found',
+          'User not found',
+          HttpStatus.UNAUTHORIZED,
+        );
+      }
+
+      return this.createAccessToken(user, payload as TokenPayload);
+    } catch (error) {
+      throw new BusinessException(
+        'auth',
+        'invalid-refresh-token',
+        'Invalid refresh token',
+        HttpStatus.UNAUTHORIZED,
+      );
+    }
+  }
+
   private calculateExpiry(expiry: string): Date {
     let expiresInMilliseconds = 0;
 
