@@ -1,10 +1,14 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
-import { UserService } from '../services';
-import { SignupReqDto, SignupResDto } from '../dto';
+import { AuthService, UserService } from '../services';
+import { LoginReqDto, SignupReqDto, SignupResDto } from '../dto';
+import { LoginResDto } from '../dto/login-res.dto';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly authService: AuthService,
+  ) {}
 
   // for tset
   @Get()
@@ -27,5 +31,12 @@ export class AuthController {
         role: userInfo.role,
       },
     };
+  }
+
+  @Post('login')
+  async login(
+    @Body() loginReqDto: LoginReqDto,
+  ): Promise<{ message: string; content: LoginResDto }> {
+    return this.authService.login(loginReqDto.email, loginReqDto.password);
   }
 }

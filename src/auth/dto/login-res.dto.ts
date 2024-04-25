@@ -1,11 +1,9 @@
 export type LoginResDto = {
-  acessToken: string;
-  refreshToken: string;
-  userInfo: {
-    id: string;
-    name: string;
-    email: string;
-    phone: string;
-    role: string;
-  };
+  // acessToken: string;
+  // refreshToken: string;
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  role: string;
 };
