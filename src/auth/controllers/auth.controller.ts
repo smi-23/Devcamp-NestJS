@@ -6,6 +6,7 @@ import { SignupReqDto, SignupResDto } from '../dto';
 export class AuthController {
   constructor(private readonly userService: UserService) {}
 
+  // for tset
   @Get()
   testHello(): string {
     return this.userService.testHello();

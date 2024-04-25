@@ -12,6 +12,7 @@ export class UserService {
 
   constructor(private readonly userRepository: UserRepository) {}
 
+  // for test
   testHello(): string {
     return 'test Hello';
   }
