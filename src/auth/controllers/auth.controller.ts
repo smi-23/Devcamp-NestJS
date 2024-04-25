@@ -72,4 +72,3 @@ export class AuthController {
     return this.authService.refreshAccessToken(refreshTokenReqDto.refreshToken);
   }
 }
-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1MzkzYzkwNi00YzljLTQxZDItYTA2Yy1jZGRiMzQ5MGM5NjAiLCJpYXQiOjE3MTQwNDU0OTEsImp0aSI6ImMwZjIxMDJlLTdjNGItNDA5My1hZGE0LTQzNjAyMWE0MDM4ZSIsImV4cCI6MTcxNDEzMTg5MX0.wwfVcjxLXg2JXaP8ViL5C6Imk8f99q5hE2B1z5XUnWo
