@@ -12,7 +12,7 @@ export class RefreshTokenRepository extends Repository<RefreshToken> {
     super(repo.target, repo.manager, repo.queryRunner);
   }
 
-  async saveAccessToken(
+  async saveRefreshToken(
     jti: string,
     user: User,
     token: string,
