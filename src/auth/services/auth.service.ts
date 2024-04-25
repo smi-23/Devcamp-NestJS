@@ -1,4 +1,4 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { UserRepository } from '../repositories';
 import { User } from '../entities';
 import * as argon2 from 'argon2';
@@ -7,6 +7,8 @@ import { LoginResDto } from '../dto/login-res.dto';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(private readonly userRepository: UserRepository) {}
 
   async login(
@@ -14,6 +16,9 @@ export class AuthService {
     plainPassword: string,
   ): Promise<{ message: string; content: LoginResDto }> {
     const user = await this.validateUser(email, plainPassword);
+
+    this.logger.log(`사용자 ${email}(${user.id})가 로그인 했습니다.`);
+
     return {
       message: '로그인에 성공하셨습니다.',
       // acessToken,

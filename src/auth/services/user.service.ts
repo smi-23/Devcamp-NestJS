@@ -32,6 +32,11 @@ export class UserService {
       );
     }
     const hashedPassword = await argon2.hash(singupReqDto.password);
+
+    this.logger.log(
+      `사용자 ${singupReqDto.email}(${user.id})가 로그인 했습니다.`,
+    );
+
     return this.userRepository.signup(singupReqDto, hashedPassword);
   }
 }
