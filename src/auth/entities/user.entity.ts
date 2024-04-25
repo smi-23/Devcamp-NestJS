@@ -2,6 +2,7 @@ import { BaseEntity } from '../../common/entities';
 import { Column, Entity, OneToMany, Relation } from 'typeorm';
 import { AccessToken } from './access-token.entity';
 import { RefreshToken } from './refresh-token.entity';
+import { AccessLog } from './access-log.entity';
 
 export type UserRole = 'admin' | 'user';
 
@@ -33,4 +34,7 @@ export class User extends BaseEntity {
 
   @OneToMany(() => RefreshToken, (token) => token.user)
   refreshToken: Relation<RefreshToken[]>;
+
+  @OneToMany(() => AccessLog, (log) => log.user)
+  accessLogs: Relation<AccessLog[]>;
 }

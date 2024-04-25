@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req } from '@nestjs/common';
 import { AuthService, UserService } from '../services';
 import { LoginReqDto, SignupReqDto, SignupResDto } from '../dto';
 import { LoginResDto } from '../dto/login-res.dto';
@@ -35,8 +35,19 @@ export class AuthController {
 
   @Post('login')
   async login(
+    @Req() req,
     @Body() loginReqDto: LoginReqDto,
   ): Promise<{ message: string; content: LoginResDto }> {
-    return this.authService.login(loginReqDto.email, loginReqDto.password);
+    const { ip, method, originalUrl } = req;
+    const reqInfo = {
+      ip,
+      endpoint: `${method} ${originalUrl}`, // ex) POST auth/login
+      ua: req.headers['user-agent'] || '',
+    };
+    return this.authService.login(
+      loginReqDto.email,
+      loginReqDto.password,
+      reqInfo,
+    );
   }
 }

@@ -2,11 +2,12 @@ import { Module } from '@nestjs/common';
 import { AuthService, UserService } from './services';
 import { AuthController } from './controllers';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AccessToken, RefreshToken, User } from './entities';
+import { AccessLog, AccessToken, RefreshToken, User } from './entities';
 import {
   AccessTokenRepository,
   RefreshTokenRepository,
   UserRepository,
+  AccessLogRepository,
 } from './repositories';
 import { HttpModule } from '@nestjs/axios';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -26,7 +27,7 @@ import { JwtModule } from '@nestjs/jwt';
         },
       }),
     }),
-    TypeOrmModule.forFeature([User, AccessToken, RefreshToken]),
+    TypeOrmModule.forFeature([User, AccessToken, RefreshToken, AccessLog]),
   ],
   controllers: [AuthController],
   providers: [
@@ -35,6 +36,7 @@ import { JwtModule } from '@nestjs/jwt';
     UserRepository,
     RefreshTokenRepository,
     AccessTokenRepository,
+    AccessLogRepository,
   ],
   exports: [
     UserService,
@@ -42,6 +44,7 @@ import { JwtModule } from '@nestjs/jwt';
     UserRepository,
     RefreshTokenRepository,
     AccessTokenRepository,
+    AccessLogRepository,
   ],
 })
 export class AuthModule {}

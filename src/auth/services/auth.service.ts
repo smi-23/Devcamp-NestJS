@@ -1,5 +1,6 @@
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import {
+  AccessLogRepository,
   AccessTokenRepository,
   RefreshTokenRepository,
   UserRepository,
@@ -8,7 +9,7 @@ import { User } from '../entities';
 import * as argon2 from 'argon2';
 import { BusinessException } from 'src/exception';
 import { LoginResDto } from '../dto/login-res.dto';
-import { TokenPayload } from '../dto';
+import { AccessLog, TokenPayload } from '../dto';
 import { v4 as uuidv4 } from 'uuid';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -22,12 +23,14 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly accessTokenRepository: AccessTokenRepository,
     private readonly refreshTokenRepository: RefreshTokenRepository,
+    private readonly accessLogRepository: AccessLogRepository,
     private readonly configService: ConfigService,
   ) {}
 
   async login(
     email: string,
     plainPassword: string,
+    req: AccessLog,
   ): Promise<{ message: string; content: LoginResDto }> {
     const user = await this.validateUser(email, plainPassword);
     const paylaod: TokenPayload = this.createTokenPayload(user.id); // 함수의 매개변수에는 타입정보를 입력하지 않습니다.
@@ -36,6 +39,9 @@ export class AuthService {
       this.createAccessToken(user, paylaod),
       this.createRefreshToken(user, paylaod),
     ]);
+
+    const { ua, endpoint, ip } = req;
+    await this.accessLogRepository.createAccessLog(user, ua, endpoint, ip);
 
     this.logger.log(`사용자 ${email}(${user.id})가 로그인 했습니다.`);
 
@@ -98,7 +104,7 @@ export class AuthService {
   async createRefreshToken(user: User, payload: TokenPayload): Promise<string> {
     const expiresIn = this.configService.get<string>('REFRESH_TOKEN_EXPIRY');
     this.logger.log(`Refresh토큰의 만료시간은 ${expiresIn}입니다.`);
-    // const expiresIn = "3600s";
+    // const expiresIn = "3600s"; .env파일의 만료시간에 s를 붙여서 해결 인자를 string으로 받고 그것을 필요에 따라 parsing하기 때문
 
     const token = this.jwtService.sign(payload, { expiresIn });
     const expiresAt = this.calculateExpiry(expiresIn);
