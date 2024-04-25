@@ -11,8 +11,8 @@ export class BaseEntity {
   id: string;
 
   @CreateDateColumn({ type: 'timestamp' })
-  createdAT: Date;
+  createdAt: Date;
 
   @UpdateDateColumn({ type: 'timestamp' })
-  updatedAT: Date;
+  updatedAt: Date;
 }

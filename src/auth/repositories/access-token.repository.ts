@@ -16,13 +16,13 @@ export class AccessTokenRepository extends Repository<AccessToken> {
     jti: string,
     user: User,
     token: string,
-    expiresAT: Date,
+    expiresAt: Date,
   ): Promise<AccessToken> {
     const accessToken = new AccessToken();
     accessToken.jti = jti;
     accessToken.user = user;
     accessToken.token = token;
-    accessToken.expiresAt = expiresAT;
+    accessToken.expiresAt = expiresAt;
     accessToken.isRevoked = false;
     return this.save(accessToken);
   }

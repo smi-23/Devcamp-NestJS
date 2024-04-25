@@ -79,14 +79,17 @@ export class AuthService {
 
   async createAccessToken(user: User, payload: TokenPayload): Promise<string> {
     const expiresIn = this.configService.get<string>('ACCESS_TOKEN_EXPIRY');
+    this.logger.log(`Access토큰의 만료시간은 ${expiresIn}입니다.`);
+    // const expiresIn = '3600s';
+
     const token = this.jwtService.sign(payload, { expiresIn });
-    const expiresAT = this.calculateExpiry(expiresIn);
+    const expiresAt = this.calculateExpiry(expiresIn);
 
     await this.accessTokenRepository.saveAccessToken(
       payload.jti,
       user,
       token,
-      expiresAT,
+      expiresAt,
     );
 
     return token;
@@ -94,14 +97,17 @@ export class AuthService {
 
   async createRefreshToken(user: User, payload: TokenPayload): Promise<string> {
     const expiresIn = this.configService.get<string>('REFRESH_TOKEN_EXPIRY');
+    this.logger.log(`Refresh토큰의 만료시간은 ${expiresIn}입니다.`);
+    // const expiresIn = "3600s";
+
     const token = this.jwtService.sign(payload, { expiresIn });
-    const expiresAT = this.calculateExpiry(expiresIn);
+    const expiresAt = this.calculateExpiry(expiresIn);
 
     await this.refreshTokenRepository.saveRefreshToken(
       payload.jti,
       user,
       token,
-      expiresAT,
+      expiresAt,
     );
 
     return token;
@@ -110,18 +116,16 @@ export class AuthService {
   private calculateExpiry(expiry: string): Date {
     let expiresInMilliseconds = 0;
 
+    const time = parseInt(expiry.slice(0, -1), 10);
+
     if (expiry.endsWith('d')) {
-      const days = parseInt(expiry.slice(0, -1), 10);
-      expiresInMilliseconds = days * 24 * 60 * 60 * 1000;
+      expiresInMilliseconds = time * 24 * 60 * 60 * 1000; // day
     } else if (expiry.endsWith('h')) {
-      const hours = parseInt(expiry.slice(0, -1), 10);
-      expiresInMilliseconds = hours * 60 * 60 * 1000;
+      expiresInMilliseconds = time * 60 * 60 * 1000; // hours
     } else if (expiry.endsWith('m')) {
-      const minutes = parseInt(expiry.slice(0, -1), 10);
-      expiresInMilliseconds = minutes * 60 * 1000;
+      expiresInMilliseconds = time * 60 * 1000; // minutes
     } else if (expiry.endsWith('s')) {
-      const seconds = parseInt(expiry.slice(0, -1), 10);
-      expiresInMilliseconds = seconds * 1000;
+      expiresInMilliseconds = time * 1000; //
     } else {
       throw new BusinessException(
         'auth',

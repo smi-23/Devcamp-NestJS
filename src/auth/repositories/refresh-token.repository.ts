@@ -16,13 +16,13 @@ export class RefreshTokenRepository extends Repository<RefreshToken> {
     jti: string,
     user: User,
     token: string,
-    expiresAT: Date,
+    expiresAt: Date,
   ): Promise<RefreshToken> {
     const refreshToken = new RefreshToken();
     refreshToken.jti = jti;
     refreshToken.user = user;
     refreshToken.token = token;
-    refreshToken.expiresAt = expiresAT;
+    refreshToken.expiresAt = expiresAt;
     refreshToken.isRevoked = false;
     return this.save(refreshToken);
   }
