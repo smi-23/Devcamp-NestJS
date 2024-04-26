@@ -7,7 +7,7 @@ import {
 } from '../repositories';
 import { User } from '../entities';
 import * as argon2 from 'argon2';
-import { BusinessException } from 'src/exception';
+import { BusinessException } from '../../exception';
 import { LoginResDto } from '../dto/login-res.dto';
 import { AccessLog, TokenPayload } from '../dto';
 import { v4 as uuidv4 } from 'uuid';

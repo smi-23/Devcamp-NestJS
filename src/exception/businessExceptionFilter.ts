@@ -7,7 +7,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { BusinessException, ErrorDomain } from './BusinessException';
+import { BusinessException, ErrorDomain } from './businessException';
 
 export interface ApiError {
   id: string;
