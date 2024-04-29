@@ -1,22 +1,31 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { CouponRepository } from '../repositories';
-import { CouponReqDto } from '../dto';
-// import { Coupon } from '../entities';
+import { CouponRepository, IssuedCouponRepository } from '../repositories';
+import { CouponReqDto, IssuedCouponReqDto } from '../dto';
 
 @Injectable()
 export class CouponService {
   private readonly logger = new Logger(CouponService.name);
-  constructor(private readonly couponRepository: CouponRepository) {}
+  constructor(
+    private readonly couponRepository: CouponRepository,
+    private readonly issuedCouponRepository: IssuedCouponRepository,
+  ) {}
 
   // async createCoupon(couponReqDto: CouponReqDto): Promise<Coupon> {
   //   return this.couponRepository.createCoupon(couponReqDto);
   // }
 
+  // for test
+  testHello(): string {
+    return 'test Hello';
+  }
+
   async createCoupon(
     couponReqDto: CouponReqDto,
   ): Promise<{ message: string; content: CouponReqDto }> {
     const couponInfo = await this.couponRepository.createCoupon(couponReqDto);
+
     this.logger.log(`${couponInfo.name}쿠폰이 발급되었습니다.`);
+
     return {
       message: `${couponInfo.name}쿠폰이 생성되었습니다.`,
       content: {
@@ -28,8 +37,40 @@ export class CouponService {
     };
   }
 
-  // for test
-  testHello(): string {
-    return 'test Hello';
+  async issueCoupon(
+    id: string,
+  ): Promise<{ message: string; content: CouponReqDto }> {
+    const couponInfo = await this.couponRepository.findOneById(id);
+    if (!couponInfo) {
+      throw new Error(`쿠폰 정보를 찾을 수 없습니다.`);
+    }
+
+    const issuedCouponReqDto: IssuedCouponReqDto = {
+      isValid: true,
+      validFrom: new Date(), // 발급일로 설정
+      validUntil: new Date(), // 유효기간 설정
+      isUsed: false,
+      useAt: null,
+    };
+
+    const issuedCouponInfo = this.issuedCouponRepository.saveIssuedCoupon(
+      couponInfo,
+      issuedCouponReqDto,
+    );
+
+    return {
+      message: `${couponInfo.name}쿠폰이 발급되었습니다.`,
+      content: {
+        name: couponInfo.name,
+        type: couponInfo.type,
+        description: couponInfo.description,
+        value: couponInfo.value,
+        // isValid1: (await issuedCouponInfo).isValid,
+        // validFrom: (await issuedCouponInfo).validFrom,
+        // validUntil: (await issuedCouponInfo).validUntil,
+        // isUsed: (await issuedCouponInfo).isUsed,
+        // useAt: (await issuedCouponInfo).usedAt,
+      },
+    };
   }
 }

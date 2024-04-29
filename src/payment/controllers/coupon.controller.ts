@@ -22,6 +22,12 @@ export class CouponController {
   //   };
   // }
 
+  // for tset
+  @Get()
+  testHello(): string {
+    return this.couponService.testHello();
+  }
+
   @Post('create')
   async createCoupon(
     @Body() couponReqDto: CouponReqDto,
@@ -29,9 +35,12 @@ export class CouponController {
     return await this.couponService.createCoupon(couponReqDto);
   }
 
-  // for tset
-  @Get()
-  testHello(): string {
-    return this.couponService.testHello();
+  // 임시로 쿠폰 발급을 위한 쿠폰 id는 body로 전달
+  @Post('issue')
+  async issueCoupon(
+    @Body() body: { id: string }, // Json형태로 받기 위해서
+  ): Promise<{ message: string; content: CouponReqDto }> {
+    const id = body.id;
+    return await this.couponService.issueCoupon(id);
   }
 }

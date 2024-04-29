@@ -13,6 +13,10 @@ export class CouponRepository extends Repository<Coupon> {
     super(repo.target, repo.manager, repo.queryRunner);
   }
 
+  async findOneById(id: string): Promise<Coupon> {
+    return this.repo.findOneBy({ id });
+  }
+
   async createCoupon(couponReqDto: CouponReqDto): Promise<Coupon> {
     const coupon = new Coupon();
     coupon.name = couponReqDto.name;
