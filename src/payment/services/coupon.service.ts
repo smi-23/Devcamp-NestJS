@@ -39,16 +39,22 @@ export class CouponService {
 
   async issueCoupon(
     id: string,
-  ): Promise<{ message: string; content: CouponReqDto }> {
+  ): Promise<{ message: string; content: CouponReqDto }> { // 지금 리퀘스트 디티오만 사용하고 있어서 수정해야 함
     const couponInfo = await this.couponRepository.findOneById(id);
     if (!couponInfo) {
       throw new Error(`쿠폰 정보를 찾을 수 없습니다.`);
     }
 
+    // 쿠폰 발급일 설정
+    const validFrom = new Date();
+    // 쿠폰 유효기간 설정
+    const validUntil = new Date();
+    validUntil.setDate(validUntil.getDate() + 7); // 예시로 7일간 유효하도록 설정
+
     const issuedCouponReqDto: IssuedCouponReqDto = {
       isValid: true,
-      validFrom: new Date(), // 발급일로 설정
-      validUntil: new Date(), // 유효기간 설정
+      validFrom,
+      validUntil,
       isUsed: false,
       useAt: null,
     };
