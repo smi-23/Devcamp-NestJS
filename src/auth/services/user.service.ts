@@ -14,7 +14,7 @@ export class UserService {
 
   // for test
   testHello(): string {
-    return 'test Hello';
+    return 'test coupon Hello';
   }
 
   async signup(singupReqDto: SignupReqDto): Promise<User> {

@@ -3,12 +3,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Coupon, IssuedCoupon } from './entities';
 import { CouponRepository } from './repositories';
 import { CouponService } from './services/coupon.service';
-// import { AuthModule } from '../auth/auth.module';
+import { CouponController } from './controllers/coupon.controller';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Coupon, IssuedCoupon])],
-  controllers: [],
+  controllers: [CouponController],
   providers: [CouponService, CouponRepository],
-  exports: [],
+  exports: [CouponService, CouponRepository],
 })
 export class PaymentModule {}
