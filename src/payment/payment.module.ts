@@ -6,9 +6,11 @@ import {
   IssuedCouponRepository,
   PointLogRepository,
   PointRepository,
+  ProductRepository,
 } from './repositories';
 import { CouponService } from './services/coupon.service';
 import { CouponController } from './controllers/coupon.controller';
+import { ProductService } from './services';
 
 @Module({
   imports: [
@@ -17,17 +19,21 @@ import { CouponController } from './controllers/coupon.controller';
   controllers: [CouponController],
   providers: [
     CouponService,
+    ProductService,
     CouponRepository,
     IssuedCouponRepository,
     PointRepository,
     PointLogRepository,
+    ProductRepository,
   ],
   exports: [
     CouponService,
+    ProductService,
     CouponRepository,
     IssuedCouponRepository,
     PointRepository,
     PointLogRepository,
+    ProductRepository,
   ],
 })
 export class PaymentModule {}

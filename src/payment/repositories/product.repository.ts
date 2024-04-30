@@ -1,14 +1,18 @@
 import { Injectable } from '@nestjs/common';
 import { Product } from '../entities';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
-export class PointRepository extends Repository<Product> {
+export class ProductRepository extends Repository<Product> {
   constructor(
     @InjectRepository(Product)
     private readonly repo: Repository<Product>,
   ) {
     super(repo.target, repo.manager, repo.queryRunner);
+  }
+
+  async getProductByIds(productIds: string[]): Promise<Product[]> {
+    return await this.findBy({ id: In(productIds) }); // In은 주어진 배열에 포함된 값 중 하나와 일치하는 데이터를 찾을 때 사용될 수 있는 연산자
   }
 }
