@@ -20,7 +20,7 @@ export class PaymentService {
   ) {}
 
   // 해당 유저가 이 포인트를 사용 가능한지 체크
-  private async applyPoints(
+  private async verifyPointAvailability(
     pointAmountToUse: number,
     userId: string,
   ): Promise<number> {
