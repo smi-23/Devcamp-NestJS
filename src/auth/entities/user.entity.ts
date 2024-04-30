@@ -1,9 +1,9 @@
 import { BaseEntity } from '../../common/entities';
-import { Column, Entity, OneToMany, Relation } from 'typeorm';
+import { Column, Entity, OneToMany, OneToOne, Relation } from 'typeorm';
 import { AccessToken } from './access-token.entity';
 import { RefreshToken } from './refresh-token.entity';
 import { AccessLog } from './access-log.entity';
-import { IssuedCoupon } from 'src/payment/entities';
+import { IssuedCoupon, Point } from 'src/payment/entities';
 
 export type UserRole = 'admin' | 'user';
 
@@ -41,4 +41,7 @@ export class User extends BaseEntity {
 
   @OneToMany(() => IssuedCoupon, (issuedCoupon) => issuedCoupon.user)
   issuedCoupons: Relation<IssuedCoupon[]>;
+
+  @OneToOne(() => Point, (point) => point.user)
+  point: Relation<Point>;
 }
