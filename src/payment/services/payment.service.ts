@@ -19,6 +19,48 @@ export class PaymentService {
     private readonly pointLogRepository: PointLogRepository,
   ) {}
 
+  private async applyCoupon(
+    couponId: string,
+    userId: string,
+    totalAmount: number,
+  ): Promise<number> {
+    const issuedCoupon = await this.issuedCouponRepository.findOne({
+      // await을 하지 않으면 issuedCoupon에 실제 쿠폰 객체가 할당되어 옵셔널 체이닝을 사용하여 속성에 접근이 가능
+      where: { coupon: { id: couponId }, user: { id: userId } },
+    });
+
+    if (!issuedCoupon) {
+      throw new BusinessException(
+        'payment',
+        `user doesn't have coupon. couponId: ${couponId} userId: ${userId}`,
+        'Invalid coupon',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    // 옵셔널 체이닝, 논리 연산자
+    const isValid =
+      issuedCoupon?.isValid &&
+      issuedCoupon?.validFrom <= new Date() &&
+      issuedCoupon?.validUntil > new Date();
+    if (!isValid) {
+      throw new BusinessException(
+        'payment',
+        `Invalid coupon type. couponId: ${couponId} userId: ${userId}`,
+        'Invalid coupon',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const { coupon } = issuedCoupon;
+    if (coupon.type === 'percent') {
+      return (totalAmount * coupon.value) / 100;
+    } else if (coupon.type === 'fixed') {
+      return coupon.value;
+    }
+    return 0;
+  }
+
   // 해당 유저가 이 포인트를 사용 가능한지 체크
   private async verifyPointAvailability(
     pointAmountToUse: number,

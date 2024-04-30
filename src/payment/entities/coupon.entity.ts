@@ -2,7 +2,7 @@ import { BaseEntity } from '../../common/entities';
 import { Column, Entity, OneToMany, Relation } from 'typeorm';
 import { IssuedCoupon } from './issued-coupon.entity';
 
-export type CouponType = 'precent' | 'fixed';
+export type CouponType = 'percent' | 'fixed';
 
 @Entity()
 export class Coupon extends BaseEntity {
