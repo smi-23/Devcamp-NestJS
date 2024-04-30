@@ -38,6 +38,25 @@ export class PaymentService {
     return finalAmount < 0 ? 0 : finalAmount;
   }
 
+  // 포인트가 먼저 적용되어 totalAmount가 감소한 상태에서 쿠폰을 적용하는 메소드
+  private async applyDiscountsAfterPoints(
+    totalAmount: number,
+    userId: string,
+    couponId: string,
+    pointAmountToUse?: number,
+  ): Promise<number> {
+    const pointDiscount = pointAmountToUse
+      ? await this.applyPoints(pointAmountToUse, userId)
+      : 0;
+    const totalAmountAfterPoints = totalAmount - pointDiscount;
+    const couponDiscount = couponId
+      ? await this.applyCoupon(couponId, userId, totalAmountAfterPoints)
+      : 0;
+
+    const finalAmount = totalAmount - couponDiscount;
+    return finalAmount < 0 ? 0 : finalAmount;
+  }
+
   // 쿠폰이 얼마나 적용되는지 계산 => 할인된 금액을 반환하는 것
   private async applyCoupon(
     couponId: string,
