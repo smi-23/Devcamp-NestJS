@@ -29,6 +29,7 @@ export class CouponService {
     return {
       message: `${couponInfo.name}쿠폰이 생성되었습니다.`,
       content: {
+        id: couponInfo.id,
         name: couponInfo.name,
         type: couponInfo.type,
         description: couponInfo.description,
@@ -37,9 +38,11 @@ export class CouponService {
     };
   }
 
+  // 리턴값을 쿠폰 정보만 리턴을 할지, issued쿠폰정보도 같이 리턴할지 아니면 issued쿠폰의 정보만 리턴을 할지 정해야 합니다.
   async issueCoupon(
     id: string,
-  ): Promise<{ message: string; content: CouponReqDto }> { // 지금 리퀘스트 디티오만 사용하고 있어서 수정해야 함
+  ): Promise<{ message: string; content: CouponReqDto }> {
+    // 지금 리퀘스트 디티오만 사용하고 있어서 수정해야 함
     const couponInfo = await this.couponRepository.findOneById(id);
     if (!couponInfo) {
       throw new Error(`쿠폰 정보를 찾을 수 없습니다.`);
@@ -67,6 +70,7 @@ export class CouponService {
     return {
       message: `${couponInfo.name}쿠폰이 발급되었습니다.`,
       content: {
+        id: couponInfo.id,
         name: couponInfo.name,
         type: couponInfo.type,
         description: couponInfo.description,
