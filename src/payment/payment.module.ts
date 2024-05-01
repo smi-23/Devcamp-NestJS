@@ -13,9 +13,12 @@ import {
 import {
   CouponRepository,
   IssuedCouponRepository,
+  OrderItemRepository,
+  OrderRepository,
   PointLogRepository,
   PointRepository,
   ProductRepository,
+  ShippingInfoRepository,
 } from './repositories';
 import { CouponService } from './services/coupon.service';
 import { CouponController } from './controllers/coupon.controller';
@@ -43,6 +46,9 @@ import { ProductService } from './services';
     PointRepository,
     PointLogRepository,
     ProductRepository,
+    OrderItemRepository,
+    OrderRepository,
+    ShippingInfoRepository,
   ],
   exports: [
     CouponService,
@@ -52,6 +58,9 @@ import { ProductService } from './services';
     PointRepository,
     PointLogRepository,
     ProductRepository,
+    OrderItemRepository,
+    OrderRepository,
+    ShippingInfoRepository,
   ],
 })
 export class PaymentModule {}

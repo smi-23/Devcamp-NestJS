@@ -21,7 +21,3 @@ export class PointRepository extends Repository<Point> {
     return this.save(point);
   }
 }
-
-// use(amountToUse: number) {
-//   this.availableAmount -= amountToUse;
-// }
