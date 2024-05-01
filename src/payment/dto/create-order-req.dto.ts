@@ -1,6 +1,6 @@
 import { OrderItem } from '../entities';
 
-export type CreateOrderDto = {
+export type CreateOrderReqDto = {
   userId: string;
   orderItems: OrderItem[];
   couponId?: string;

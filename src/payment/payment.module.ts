@@ -22,12 +22,17 @@ import {
 } from './repositories';
 import { CouponService } from './services/coupon.service';
 import { CouponController } from './controllers/coupon.controller';
-import { ProductService } from './services';
+import { PaymentService, ProductService } from './services';
 import { UserRepository } from 'src/auth/repositories';
+import { PaymentController } from './controllers';
+import { AuthModule } from 'src/auth/auth.module';
 import { User } from 'src/auth/entities';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
+    AuthModule,
+    ConfigModule,
     TypeOrmModule.forFeature([
       Coupon,
       IssuedCoupon,
@@ -40,10 +45,12 @@ import { User } from 'src/auth/entities';
       User,
     ]),
   ],
-  controllers: [CouponController],
+  controllers: [CouponController, PaymentController],
   providers: [
     CouponService,
     ProductService,
+    PaymentService,
+
     CouponRepository,
     IssuedCouponRepository,
     PointRepository,
@@ -57,6 +64,8 @@ import { User } from 'src/auth/entities';
   exports: [
     CouponService,
     ProductService,
+    PaymentService,
+
     CouponRepository,
     IssuedCouponRepository,
     PointRepository,

@@ -41,6 +41,7 @@ export class CouponService {
   // 리턴값을 쿠폰 정보만 리턴을 할지, issued쿠폰정보도 같이 리턴할지 아니면 issued쿠폰의 정보만 리턴을 할지 정해야 합니다.
   async issueCoupon(
     id: string,
+    userId: string,
   ): Promise<{ message: string; content: CouponReqDto }> {
     // 지금 리퀘스트 디티오만 사용하고 있어서 수정해야 함
     const couponInfo = await this.couponRepository.findOneById(id);
@@ -65,6 +66,7 @@ export class CouponService {
     const issuedCouponInfo = this.issuedCouponRepository.saveIssuedCoupon(
       couponInfo,
       issuedCouponReqDto,
+      userId,
     );
 
     return {

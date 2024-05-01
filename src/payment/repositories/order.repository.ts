@@ -11,14 +11,14 @@ export class OrderRepository extends Repository<Order> {
   constructor(
     @InjectRepository(Order)
     private readonly repo: Repository<Order>,
-    private readonly userRepository: UserRepository,
-    private readonly issuedCouponRepository: IssuedCouponRepository,
-    private readonly pointRepository: PointRepository,
-    // @InjectEntityManager()
-    // private readonly entityManager: EntityManager,
     // private readonly userRepository: UserRepository,
-    // private readonly pointRepository: PointRepository,
     // private readonly issuedCouponRepository: IssuedCouponRepository,
+    // private readonly pointRepository: PointRepository,
+    @InjectEntityManager()
+    private readonly entityManager: EntityManager,
+    private readonly userRepository: UserRepository,
+    private readonly pointRepository: PointRepository,
+    private readonly issuedCouponRepository: IssuedCouponRepository,
   ) {
     super(repo.target, repo.manager, repo.queryRunner);
   }
@@ -27,7 +27,7 @@ export class OrderRepository extends Repository<Order> {
     userId: string,
     orderItems: OrderItem[],
     finalAmount: number,
-    shippingInfo: ShippingInfo,
+    shippingInfo?: ShippingInfo,
   ): Promise<Order> {
     const user = await this.userRepository.findOne({ where: { id: userId } });
     const order = new Order();

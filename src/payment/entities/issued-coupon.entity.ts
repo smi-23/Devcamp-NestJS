@@ -17,6 +17,7 @@ export class IssuedCoupon extends BaseEntity {
   @ManyToOne(() => Coupon)
   @JoinColumn()
   coupon: Relation<Coupon>;
+  // coupon: Coupon;
 
   @ManyToOne(() => User)
   @JoinColumn()

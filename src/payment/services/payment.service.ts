@@ -6,17 +6,25 @@ import {
   OrderRepository,
   PointLogRepository,
   PointRepository,
+  ProductRepository,
   ShippingInfoRepository,
 } from '../repositories';
 import { BusinessException } from 'src/exception';
-import { Order, OrderItem, Product } from '../entities';
+import { Order, OrderItem, Point, Product } from '../entities';
 import { ProductService } from './product.service';
 import { Transactional } from 'typeorm-transactional';
-import { CreateOrderDto } from '../dto';
+import { CreateOrderReqDto, CreateProductReqDto, TossPaymentDto } from '../dto';
+import { ConfigService } from '@nestjs/config';
+import { v4 as uuid_v4 } from 'uuid';
+import axios from 'axios';
+import { UserRepository } from 'src/auth/repositories';
 
 @Injectable()
 export class PaymentService {
-  private readonly logger = new Logger(CouponService.name);
+  private readonly logger = new Logger(PaymentService.name);
+  private readonly tossUrl = 'https://api.tosspayments.com/v1/payments';
+  private readonly tossSecretKey =
+    this.configService.get<string>('TOSS_SECRET');
 
   constructor(
     private readonly couponRepository: CouponRepository,
@@ -26,26 +34,110 @@ export class PaymentService {
     private readonly productService: ProductService,
     private readonly orderRepository: OrderRepository,
     private readonly shippingInfoRepository: ShippingInfoRepository,
+    private readonly configService: ConfigService,
+    private readonly productRepository: ProductRepository,
+    private readonly userRepository: UserRepository,
   ) {}
+
+  async tossPayment(tossDto: TossPaymentDto): Promise<TossPaymentDto> {
+    try {
+      const idempotency = uuid_v4();
+
+      const { paymentKey, orderId, amount } = tossDto;
+
+      const response = await axios.post(
+        `${this.tossUrl}/${paymentKey}`,
+        {
+          orderId,
+          amount,
+        },
+        {
+          headers: {
+            Authorization: `Basic ${Buffer.from(`${this.tossSecretKey}:`).toString('base64')}`,
+            'Content-Type': 'application/json',
+            'Idempotency-Key': `${idempotency}`,
+          },
+        },
+      );
+
+      const findOrder = await this.orderRepository.findOneBy({
+        orderNo: orderId,
+      });
+
+      if (!findOrder) {
+        throw new BusinessException(
+          'payment',
+          'Not-found-order',
+          'Not-found-order',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      if (!response) {
+        throw new BusinessException(
+          'payment',
+          'Toss-payments-error',
+          'Toss-payments-error',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+
+      if (response.data.orderId !== findOrder.orderNo) {
+        throw new BusinessException(
+          'payment',
+          'Order-Miss-Match',
+          'Order-Miss-Match',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      if (response.data.amount !== findOrder.amount) {
+        throw new BusinessException(
+          'payment',
+          'Amount-Miss-Match',
+          'Amount-Miss-Match',
+          HttpStatus.BAD_GATEWAY,
+        );
+      }
+
+      const order = await this.completeOrder(orderId);
+
+      return {
+        paymentKey: paymentKey,
+        orderId: order.orderNo,
+        amount: order.amount,
+      };
+    } catch (error) {
+      console.error(error.response ? error.response.data : error.message);
+    }
+  }
 
   // 주문 생성
   @Transactional()
-  async initOrder(createOrderDto: CreateOrderDto): Promise<Order> {
-    const totalAmount = await this.calculateTotalAmount(
-      createOrderDto.orderItems,
-    );
+  async initOrder(dto: CreateOrderReqDto): Promise<Order> {
+    // 주문 금액 계산
+    const totalAmount = await this.calculateTotalAmount(dto.orderItems);
+
+    // 할인 적용
     const finalAmount = await this.applyDiscounts(
       totalAmount,
-      createOrderDto.userId,
-      createOrderDto.couponId,
-      createOrderDto.pointAmountToUse,
+      dto.userId,
+      dto.couponId,
+      dto.pointAmountToUse,
     );
+
+    // 주문 생성
     return this.createOrder(
-      createOrderDto.userId,
-      createOrderDto.orderItems,
+      dto.userId,
+      dto.orderItems,
       finalAmount,
-      createOrderDto.shippingAddress,
+      dto.shippingAddress,
     );
+  }
+
+  // 주문 완료
+  @Transactional()
+  async completeOrder(orderId: string): Promise<Order> {
+    return this.orderRepository.completeOrder(orderId);
   }
 
   private async createOrder(
@@ -65,10 +157,12 @@ export class PaymentService {
     );
   }
 
-  // 주문 완료
-  @Transactional()
-  async completeOrder(orderId: string): Promise<Order> {
-    return this.orderRepository.completeOrder(orderId);
+  async createProduct(dto: CreateProductReqDto): Promise<Product> {
+    return await this.productRepository.createProduct(dto);
+  }
+
+  async createPoint(userId: string, availableAmount: number): Promise<Point> {
+    return await this.pointRepository.createPoint(userId, availableAmount);
   }
 
   private async calculateTotalAmount(orderItmes: OrderItem[]): Promise<number> {
@@ -97,12 +191,15 @@ export class PaymentService {
     couponId: string,
     pointAmountToUse?: number,
   ): Promise<number> {
+    this.logger.log(`인자로 받은 쿠폰아이디입니다. ${couponId}`);
+
     const couponDiscount = couponId
       ? await this.applyCoupon(couponId, userId, totalAmount)
       : 0;
     const pointDiscount = pointAmountToUse
       ? await this.applyPoints(pointAmountToUse, userId)
       : 0;
+    this.logger.log(`함수 실행 후 쿠폰아이디입니다. ${couponId} 함수 실행 후 쿠폰디스카운트 ${couponDiscount}`);
 
     // 사실상 적립금을 후처리, 적립금을 먼저 처리하고 쿠폰을 사용하면 어떻게 될까?( 사용자가 받는 할인 감소)
     const finalAmount = totalAmount - (couponDiscount + pointDiscount);
@@ -135,8 +232,8 @@ export class PaymentService {
     totalAmount: number,
   ): Promise<number> {
     const issuedCoupon = await this.issuedCouponRepository.findOne({
-      // await을 하지 않으면 issuedCoupon에 실제 쿠폰 객체가 할당되어 옵셔널 체이닝을 사용하여 속성에 접근이 가능
       where: { coupon: { id: couponId }, user: { id: userId } },
+      relations: ['coupon'], // 관련된 쿠폰 엔터티를 가져오도록 설정
     });
 
     if (!issuedCoupon) {
@@ -148,12 +245,10 @@ export class PaymentService {
       );
     }
 
-    // 옵셔널 체이닝, 논리 연산자
-    const isValid =
-      issuedCoupon?.isValid &&
-      issuedCoupon?.validFrom <= new Date() &&
-      issuedCoupon?.validUntil > new Date();
-    if (!isValid) {
+    // 옵셔널 체이닝을 사용하여 안전하게 접근
+    const couponType = issuedCoupon?.coupon?.type;
+
+    if (!couponType) {
       throw new BusinessException(
         'payment',
         `Invalid coupon type. couponId: ${couponId} userId: ${userId}`,
@@ -162,11 +257,10 @@ export class PaymentService {
       );
     }
 
-    const { coupon } = issuedCoupon;
-    if (coupon.type === 'percent') {
-      return (totalAmount * coupon.value) / 100;
-    } else if (coupon.type === 'fixed') {
-      return coupon.value;
+    if (couponType === 'percent') {
+      return (totalAmount * issuedCoupon.coupon.value) / 100;
+    } else if (couponType === 'fixed') {
+      return issuedCoupon.coupon.value;
     }
     return 0; // 쿠폰의 타입이 percent, fixed가 아닐 경우
   }
