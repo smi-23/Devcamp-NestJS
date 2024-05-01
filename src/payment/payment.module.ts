@@ -23,6 +23,8 @@ import {
 import { CouponService } from './services/coupon.service';
 import { CouponController } from './controllers/coupon.controller';
 import { ProductService } from './services';
+import { UserRepository } from 'src/auth/repositories';
+import { User } from 'src/auth/entities';
 
 @Module({
   imports: [
@@ -35,6 +37,7 @@ import { ProductService } from './services';
       Order,
       OrderItem,
       ShippingInfo,
+      User,
     ]),
   ],
   controllers: [CouponController],
@@ -49,6 +52,7 @@ import { ProductService } from './services';
     OrderItemRepository,
     OrderRepository,
     ShippingInfoRepository,
+    UserRepository,
   ],
   exports: [
     CouponService,
@@ -61,6 +65,7 @@ import { ProductService } from './services';
     OrderItemRepository,
     OrderRepository,
     ShippingInfoRepository,
+    UserRepository,
   ],
 })
 export class PaymentModule {}

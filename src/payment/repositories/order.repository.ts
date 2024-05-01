@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { EntityManager, Repository } from 'typeorm';
-import { InjectRepository } from '@nestjs/typeorm';
+import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 import { Order, OrderItem, ShippingInfo } from '../entities';
 import { UserRepository } from 'src/auth/repositories';
 import { IssuedCouponRepository } from './issued-coupon.repository';
@@ -14,6 +14,11 @@ export class OrderRepository extends Repository<Order> {
     private readonly userRepository: UserRepository,
     private readonly issuedCouponRepository: IssuedCouponRepository,
     private readonly pointRepository: PointRepository,
+    // @InjectEntityManager()
+    // private readonly entityManager: EntityManager,
+    // private readonly userRepository: UserRepository,
+    // private readonly pointRepository: PointRepository,
+    // private readonly issuedCouponRepository: IssuedCouponRepository,
   ) {
     super(repo.target, repo.manager, repo.queryRunner);
   }
