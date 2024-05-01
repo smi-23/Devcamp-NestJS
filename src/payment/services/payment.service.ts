@@ -3,10 +3,16 @@ import { CouponService } from './coupon.service';
 import {
   CouponRepository,
   IssuedCouponRepository,
+  OrderRepository,
   PointLogRepository,
   PointRepository,
+  ShippingInfoRepository,
 } from '../repositories';
 import { BusinessException } from 'src/exception';
+import { Order, OrderItem, Product } from '../entities';
+import { ProductService } from './product.service';
+import { Transactional } from 'typeorm-transactional';
+import { CreateOrderDto } from '../dto';
 
 @Injectable()
 export class PaymentService {
@@ -17,7 +23,72 @@ export class PaymentService {
     private readonly issuedCouponRepository: IssuedCouponRepository,
     private readonly pointRepository: PointRepository,
     private readonly pointLogRepository: PointLogRepository,
+    private readonly productService: ProductService,
+    private readonly orderRepository: OrderRepository,
+    private readonly shippingInfoRepository: ShippingInfoRepository,
   ) {}
+
+  // 주문 생성
+  @Transactional()
+  async initOrder(createOrderDto: CreateOrderDto): Promise<Order> {
+    const totalAmount = await this.calculateTotalAmount(
+      createOrderDto.orderItems,
+    );
+    const finalAmount = await this.applyDiscounts(
+      totalAmount,
+      createOrderDto.userId,
+      createOrderDto.couponId,
+      createOrderDto.pointAmountToUse,
+    );
+    return this.createOrder(
+      createOrderDto.userId,
+      createOrderDto.orderItems,
+      finalAmount,
+      createOrderDto.shippingAddress,
+    );
+  }
+
+  private async createOrder(
+    userId: string,
+    orderItems: OrderItem[],
+    finalAmount: number,
+    shippingAddress?: string,
+  ): Promise<Order> {
+    const shippingInfo = shippingAddress
+      ? await this.shippingInfoRepository.createShippingInfo(shippingAddress)
+      : null;
+    return await this.orderRepository.createOrder(
+      userId,
+      orderItems,
+      finalAmount,
+      shippingInfo,
+    );
+  }
+
+  // 주문 완료
+  @Transactional()
+  async completeOrder(orderId: string): Promise<Order> {
+    return this.orderRepository.completeOrder(orderId);
+  }
+
+  private async calculateTotalAmount(orderItmes: OrderItem[]): Promise<number> {
+    let totalAmount = 0;
+    const productIds = orderItmes.map((item) => item.productId);
+    const products = await this.productService.getProductByIds(productIds);
+    for (const item of orderItmes) {
+      const product = products.find((p) => p.id === item.productId);
+      if (!product) {
+        throw new BusinessException(
+          'payment',
+          `Product with ID ${item.productId} not found`,
+          'Invalid product',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      totalAmount += product.price * item.quantity;
+    }
+    return totalAmount;
+  }
 
   // 최종적으로 할인이 얼마가 적용되는지
   private async applyDiscounts(
