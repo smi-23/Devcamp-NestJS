@@ -1,8 +1,16 @@
 // import { User } from 'src/auth/entities';
 import { BaseEntity } from '../../common/entities';
-import { Column, Entity, ManyToOne, JoinColumn, Relation } from 'typeorm';
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  JoinColumn,
+  Relation,
+  OneToOne,
+} from 'typeorm';
 import { Coupon } from './coupon.entity';
 import { User } from 'src/auth/entities';
+import { Order } from './order.entity';
 
 @Entity()
 export class IssuedCoupon extends BaseEntity {
@@ -13,6 +21,11 @@ export class IssuedCoupon extends BaseEntity {
   @ManyToOne(() => User)
   @JoinColumn()
   user: Relation<User>;
+
+  @OneToOne(() => Order, (order) => order.usedIssuedCoupon, {
+    nullable: true,
+  })
+  usedOrder: Relation<Order>;
 
   @Column({ type: 'boolean', default: false })
   isValid: boolean;
