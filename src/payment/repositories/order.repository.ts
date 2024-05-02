@@ -1,13 +1,16 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { EntityManager, Repository } from 'typeorm';
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 import { Order, OrderItem, ShippingInfo } from '../entities';
 import { UserRepository } from 'src/auth/repositories';
 import { IssuedCouponRepository } from './issued-coupon.repository';
 import { PointRepository } from './point.repository';
+import { JsonWebTokenError } from '@nestjs/jwt';
 
 @Injectable()
 export class OrderRepository extends Repository<Order> {
+  private readonly logger = new Logger(OrderRepository.name);
+
   constructor(
     @InjectRepository(Order)
     private readonly repo: Repository<Order>,
@@ -28,14 +31,28 @@ export class OrderRepository extends Repository<Order> {
     orderItems: OrderItem[],
     finalAmount: number,
     shippingInfo?: ShippingInfo,
+    issuedCouponId?: string,
   ): Promise<Order> {
     const user = await this.userRepository.findOne({ where: { id: userId } });
+    // const usedIssuedCoupon = await this.issuedCouponRepository.findOne({ where: { id: issuedCouponId } });
+    const usedIssuedCoupon = await this.issuedCouponRepository.findOne({
+      where: { id: issuedCouponId },
+      relations: ['coupon', 'user']
+    });
+
+    this.logger.log(
+      `이슈드 쿠폰 객체입니다. ${JSON.stringify(usedIssuedCoupon)}`,
+    );
     const order = new Order();
     order.user = user;
     order.amount = finalAmount;
     order.status = 'started';
     order.items = orderItems;
     order.shippingInfo = shippingInfo;
+    order.usedIssuedCoupon = usedIssuedCoupon;
+    this.logger.log(
+      `여기까지 왓나?22 ${JSON.stringify(order.usedIssuedCoupon)}`,
+    );
     return this.save(order);
   }
 

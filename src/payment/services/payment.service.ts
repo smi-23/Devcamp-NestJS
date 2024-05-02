@@ -116,7 +116,9 @@ export class PaymentService {
   async initOrder(dto: CreateOrderReqDto): Promise<Order> {
     // 주문 금액 계산
     const totalAmount = await this.calculateTotalAmount(dto.orderItems);
-
+    this.logger.log(
+      `캘큘레이트 함수 실행 후  파이널 어마운트에 인자로 들어갈 토탈어마운트 입니다.. ${totalAmount}`,
+    );
     // 할인 적용
     const finalAmount = await this.applyDiscounts(
       totalAmount,
@@ -124,14 +126,19 @@ export class PaymentService {
       dto.couponId,
       dto.pointAmountToUse,
     );
-
+   
     // 주문 생성
-    return this.createOrder(
+    const abc = this.createOrder(
       dto.userId,
       dto.orderItems,
       finalAmount,
       dto.shippingAddress,
+      dto.issuedCouponId,
     );
+    this.logger.log(
+      `여기까지 왓나?abc입니다. ${abc}`,
+    );
+    return abc;
   }
 
   // 주문 완료
@@ -145,6 +152,7 @@ export class PaymentService {
     orderItems: OrderItem[],
     finalAmount: number,
     shippingAddress?: string,
+    issuedCouponId?: string,
   ): Promise<Order> {
     const shippingInfo = shippingAddress
       ? await this.shippingInfoRepository.createShippingInfo(shippingAddress)
@@ -154,6 +162,7 @@ export class PaymentService {
       orderItems,
       finalAmount,
       shippingInfo,
+      issuedCouponId,
     );
   }
 
@@ -165,6 +174,7 @@ export class PaymentService {
     return await this.pointRepository.createPoint(userId, availableAmount);
   }
 
+  // 이상 무
   private async calculateTotalAmount(orderItmes: OrderItem[]): Promise<number> {
     let totalAmount = 0;
     const productIds = orderItmes.map((item) => item.productId);
@@ -191,18 +201,17 @@ export class PaymentService {
     couponId: string,
     pointAmountToUse?: number,
   ): Promise<number> {
-    this.logger.log(`인자로 받은 쿠폰아이디입니다. ${couponId}`);
-
     const couponDiscount = couponId
       ? await this.applyCoupon(couponId, userId, totalAmount)
       : 0;
     const pointDiscount = pointAmountToUse
       ? await this.applyPoints(pointAmountToUse, userId)
       : 0;
-    this.logger.log(`함수 실행 후 쿠폰아이디입니다. ${couponId} 함수 실행 후 쿠폰디스카운트 ${couponDiscount}`);
-
     // 사실상 적립금을 후처리, 적립금을 먼저 처리하고 쿠폰을 사용하면 어떻게 될까?( 사용자가 받는 할인 감소)
     const finalAmount = totalAmount - (couponDiscount + pointDiscount);
+    this.logger.log(
+      `최종 할인금액 계산입니다. finalAmount=${finalAmount}, totalAmount=${totalAmount}, couponDiscount=${couponDiscount}, pointDiscount=${pointDiscount}`,
+    );
     return finalAmount < 0 ? 0 : finalAmount;
   }
 
