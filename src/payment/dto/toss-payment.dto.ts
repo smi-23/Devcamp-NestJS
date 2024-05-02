@@ -1,6 +1,6 @@
 export class TossPaymentDto {
   paymentType?: string;
-  paymentKey: string;
   orderId: string;
+  paymentKey: string;
   amount: number;
 }

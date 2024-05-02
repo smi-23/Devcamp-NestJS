@@ -52,7 +52,10 @@ export class OrderRepository extends Repository<Order> {
   }
 
   async completeOrder(orderId: string): Promise<Order> {
-    const order = await this.findOne({ where: { id: orderId } });
+    const order = await this.findOne({
+      where: { orderNo: orderId },
+      relations: ['usedIssuedCoupon', 'user'],
+    });
     order.status = 'paid';
 
     await Promise.all([

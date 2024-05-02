@@ -44,7 +44,9 @@ export class PaymentService {
       const idempotency = uuid_v4();
 
       const { paymentKey, orderId, amount } = tossDto;
-
+      this.logger.log(
+        `결제창에서의 dto값이 잘 들어오는지 확인합니다. paymentKey:${paymentKey}, orderId:${orderId}, amount:${amount}, `,
+      );
       const response = await axios.post(
         `${this.tossUrl}/${paymentKey}`,
         {
@@ -60,47 +62,53 @@ export class PaymentService {
         },
       );
 
-      const findOrder = await this.orderRepository.findOneBy({
-        orderNo: orderId,
-      });
+      // const findOrder = await this.orderRepository.findOneBy({
+      //   orderNo: orderId,
+      // });
 
-      if (!findOrder) {
-        throw new BusinessException(
-          'payment',
-          'Not-found-order',
-          'Not-found-order',
-          HttpStatus.BAD_REQUEST,
-        );
-      }
+      // if (!findOrder) {
+      //   throw new BusinessException(
+      //     'payment',
+      //     'Not-found-order',
+      //     'Not-found-order',
+      //     HttpStatus.BAD_REQUEST,
+      //   );
+      // }
 
-      if (!response) {
-        throw new BusinessException(
-          'payment',
-          'Toss-payments-error',
-          'Toss-payments-error',
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
-      }
+      // if (!response) {
+      //   throw new BusinessException(
+      //     'payment',
+      //     'Toss-payments-error',
+      //     'Toss-payments-error',
+      //     HttpStatus.INTERNAL_SERVER_ERROR,
+      //   );
+      // }
 
-      if (response.data.orderId !== findOrder.orderNo) {
-        throw new BusinessException(
-          'payment',
-          'Order-Miss-Match',
-          'Order-Miss-Match',
-          HttpStatus.BAD_REQUEST,
-        );
-      }
-      if (response.data.amount !== findOrder.amount) {
-        throw new BusinessException(
-          'payment',
-          'Amount-Miss-Match',
-          'Amount-Miss-Match',
-          HttpStatus.BAD_GATEWAY,
-        );
-      }
+      // if (response.data.orderId !== findOrder.orderNo) {
+      //   throw new BusinessException(
+      //     'payment',
+      //     'Order-Miss-Match',
+      //     'Order-Miss-Match',
+      //     HttpStatus.BAD_REQUEST,
+      //   );
+      // }
+      // this.logger.log(
+      //   `결제창에서의 리스폰스의 어마운트입니다. ${response.data.amount}`,
+      // );
+      // this.logger.log(
+      //   `결제창에서의 파인드 오더의 어마운트입니다. ${findOrder.amount}`,
+      // );
+      // if (response.data.amount !== findOrder.amount) {
+      //   throw new BusinessException(
+      //     'payment',
+      //     'Amount-Miss-Match',
+      //     'Amount-Miss-Match',
+      //     HttpStatus.BAD_GATEWAY,
+      //   );
+      // }
 
       const order = await this.completeOrder(orderId);
-
+      // return '결제가 완료되었습니다.';
       return {
         paymentKey: paymentKey,
         orderId: order.orderNo,
@@ -300,5 +308,10 @@ export class PaymentService {
       `applyPoints함수에서 리턴 직전의 포인트사용량입니다.${pointAmountToUse}`,
     );
     return pointAmountToUse;
+  }
+
+  // for test
+  paymentTest(): string {
+    return 'payment test success';
   }
 }

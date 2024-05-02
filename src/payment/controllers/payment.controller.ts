@@ -51,6 +51,11 @@ export class PaymentController {
     return responseTossDto;
   }
 
+  // @Get('success')
+  // paymentTest(): string {
+  //   return this.paymentService.paymentTest();
+  // }
+
   @Post('fail')
   failOrder() {
     return { response: '실패' };
@@ -68,4 +73,9 @@ export class PaymentController {
     const { userId, availableAmount } = body;
     return await this.paymentService.createPoint(userId, availableAmount);
   }
+
+//   @Post('toss')
+//   async tossPayment(@Body() tossPaymentDto: TossPaymentDto): Promise<TossPaymentDto> {
+//     return await this.paymentService.tossPayment(tossPaymentDto);
+//   }
 }
