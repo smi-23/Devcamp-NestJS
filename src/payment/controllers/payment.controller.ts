@@ -30,7 +30,6 @@ export class PaymentController {
     const order = await this.paymentService.initOrder(body);
     this.logger.log(
       `order객체의 포인트 사용량 입니다.: ${JSON.stringify(order.pointAmountUsed)}`,
-      `order객체의 의 로그 세번째 입니다.: ${JSON.stringify(order.usedIssuedCoupon.coupon.id)}`,
     );
 
     return {

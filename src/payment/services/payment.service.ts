@@ -126,19 +126,19 @@ export class PaymentService {
       dto.couponId,
       dto.pointAmountToUse,
     );
-   
+    this.logger.log(
+      `주문생성 메소드 직전의 포인트사용량입니다.${dto.pointAmountToUse}`,
+    );
+
     // 주문 생성
-    const abc = this.createOrder(
+    return this.createOrder(
       dto.userId,
       dto.orderItems,
       finalAmount,
       dto.shippingAddress,
       dto.issuedCouponId,
+      dto.pointAmountToUse,
     );
-    this.logger.log(
-      `여기까지 왓나?abc입니다. ${abc}`,
-    );
-    return abc;
   }
 
   // 주문 완료
@@ -153,6 +153,7 @@ export class PaymentService {
     finalAmount: number,
     shippingAddress?: string,
     issuedCouponId?: string,
+    pointAmountToUse?: number,
   ): Promise<Order> {
     const shippingInfo = shippingAddress
       ? await this.shippingInfoRepository.createShippingInfo(shippingAddress)
@@ -163,6 +164,7 @@ export class PaymentService {
       finalAmount,
       shippingInfo,
       issuedCouponId,
+      pointAmountToUse,
     );
   }
 
@@ -279,6 +281,9 @@ export class PaymentService {
     pointAmountToUse: number,
     userId: string,
   ): Promise<number> {
+    this.logger.log(
+      `applyPoints함수에서 인자로 들어온 포인트사용량입니다.${pointAmountToUse}`,
+    );
     const point = await this.pointRepository.findOne({
       where: { user: { id: userId } },
     });
@@ -291,6 +296,9 @@ export class PaymentService {
         HttpStatus.BAD_REQUEST,
       );
     }
+    this.logger.log(
+      `applyPoints함수에서 리턴 직전의 포인트사용량입니다.${pointAmountToUse}`,
+    );
     return pointAmountToUse;
   }
 }
