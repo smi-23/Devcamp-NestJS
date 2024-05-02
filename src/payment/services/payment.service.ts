@@ -45,7 +45,7 @@ export class PaymentService {
 
       const { paymentKey, orderId, amount } = tossDto;
       this.logger.log(
-        `결제창에서의 dto값이 잘 들어오는지 확인합니다. paymentKey:${paymentKey}, orderId:${orderId}, amount:${amount}, `,
+        `결제창에서의 dto값이 잘 들어오는지 확인합니다. paymentKey:${paymentKey}, orderId:${orderId}, amount:${amount}`,
       );
       const response = await axios.post(
         `${this.tossUrl}/${paymentKey}`,
@@ -61,51 +61,55 @@ export class PaymentService {
           },
         },
       );
+      // 응답에서 필요한 데이터만 추출하여 로깅
+      const responseData = {
+        status: response.status,
+        data: response.data,
+        headers: response.headers,
+      };
+      this.logger.log(
+        `결제창에서의 response값이 잘 들어오는지 확인합니다. response:${JSON.stringify(responseData)}`,
+      );
 
-      // const findOrder = await this.orderRepository.findOneBy({
-      //   orderNo: orderId,
-      // });
+      const findOrder = await this.orderRepository.findOneBy({
+        orderNo: orderId,
+      });
 
-      // if (!findOrder) {
-      //   throw new BusinessException(
-      //     'payment',
-      //     'Not-found-order',
-      //     'Not-found-order',
-      //     HttpStatus.BAD_REQUEST,
-      //   );
-      // }
+      if (!findOrder) {
+        throw new BusinessException(
+          'payment',
+          'Not-found-order',
+          'Not-found-order',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
 
-      // if (!response) {
-      //   throw new BusinessException(
-      //     'payment',
-      //     'Toss-payments-error',
-      //     'Toss-payments-error',
-      //     HttpStatus.INTERNAL_SERVER_ERROR,
-      //   );
-      // }
+      if (!response) {
+        throw new BusinessException(
+          'payment',
+          'Toss-payments-error',
+          'Toss-payments-error',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
 
-      // if (response.data.orderId !== findOrder.orderNo) {
-      //   throw new BusinessException(
-      //     'payment',
-      //     'Order-Miss-Match',
-      //     'Order-Miss-Match',
-      //     HttpStatus.BAD_REQUEST,
-      //   );
-      // }
-      // this.logger.log(
-      //   `결제창에서의 리스폰스의 어마운트입니다. ${response.data.amount}`,
-      // );
-      // this.logger.log(
-      //   `결제창에서의 파인드 오더의 어마운트입니다. ${findOrder.amount}`,
-      // );
-      // if (response.data.amount !== findOrder.amount) {
-      //   throw new BusinessException(
-      //     'payment',
-      //     'Amount-Miss-Match',
-      //     'Amount-Miss-Match',
-      //     HttpStatus.BAD_GATEWAY,
-      //   );
-      // }
+      if (response.data.orderId !== findOrder.orderNo) {
+        throw new BusinessException(
+          'payment',
+          'Order-Miss-Match',
+          'Order-Miss-Match',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      if (response.data.easyPay.amount !== findOrder.amount) {
+        throw new BusinessException(
+          'payment',
+          'Amount-Miss-Match',
+          'Amount-Miss-Match',
+          HttpStatus.BAD_GATEWAY,
+        );
+      }
 
       const order = await this.completeOrder(orderId);
       // return '결제가 완료되었습니다.';
