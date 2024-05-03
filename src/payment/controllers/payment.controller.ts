@@ -45,7 +45,7 @@ export class PaymentController {
   @Get('success')
   async completeOrder(
     @Query() tossPaymentDto: TossPaymentDto,
-  ): Promise<TossPaymentDto> {
+  ): Promise<{ message: string; content: TossPaymentDto }> {
     const responseTossDto =
       await this.paymentService.tossPayment(tossPaymentDto);
     return responseTossDto;
@@ -74,7 +74,7 @@ export class PaymentController {
     return await this.paymentService.createPoint(userId, availableAmount);
   }
 
-//   @Post('toss')
+  //   @Post('toss')
 //   async tossPayment(@Body() tossPaymentDto: TossPaymentDto): Promise<TossPaymentDto> {
 //     return await this.paymentService.tossPayment(tossPaymentDto);
 //   }

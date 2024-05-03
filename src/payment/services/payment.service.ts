@@ -39,9 +39,11 @@ export class PaymentService {
     private readonly userRepository: UserRepository,
   ) {}
 
-  async tossPayment(tossDto: TossPaymentDto): Promise<TossPaymentDto> {
+  async tossPayment(
+    tossDto: TossPaymentDto,
+  ): Promise<{ message: string; content: TossPaymentDto }> {
     try {
-      const idempotency = uuid_v4();
+      // const idempotency = uuid_v4(); // 당장은 없어도 결제는 됨
 
       const { paymentKey, orderId, amount } = tossDto;
       this.logger.log(
@@ -57,7 +59,7 @@ export class PaymentService {
           headers: {
             Authorization: `Basic ${Buffer.from(`${this.tossSecretKey}:`).toString('base64')}`,
             'Content-Type': 'application/json',
-            'Idempotency-Key': `${idempotency}`,
+            // 'Idempotency-Key': `${idempotency}`,
           },
         },
       );
@@ -112,11 +114,13 @@ export class PaymentService {
       }
 
       const order = await this.completeOrder(orderId);
-      // return '결제가 완료되었습니다.';
       return {
-        paymentKey: paymentKey,
-        orderId: order.orderNo,
-        amount: order.amount,
+        message: '결제가완료되었습니다.',
+        content: {
+          paymentKey: paymentKey,
+          orderId: order.orderNo,
+          amount: order.amount,
+        },
       };
     } catch (error) {
       console.error(error.response ? error.response.data : error.message);
